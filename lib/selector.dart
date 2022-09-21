@@ -1,49 +1,41 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_constructors_in_immutables
 
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:number_generator/range_form.dart';
 
-class Selector extends StatefulWidget {
-  Selector({super.key});
+import 'Random_page.dart';
 
-  @override
-  State<Selector> createState() => _SelectorState();
-}
-
-class _SelectorState extends State<Selector> {
-  int _min = 0;
-  int _max = 0;
-
-  void _incrementCounter() {
-    setState(() {});
-  }
+class Selector extends HookWidget {
+  final formKey = GlobalKey<FormState>();
+  Selector({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final min = useState<int>(0);
+    final max = useState<int>(0);
+
     return Scaffold(
       appBar: AppBar(
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text("Select Range"),
       ),
-      body: Form(
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            // ignore: prefer__literals_to_create_immutables
-            children: [
-              RangeSelectotTextForm(
-                  labelText: 'Minimum', intValueSetter: (value) => _min),
-              SizedBox(height: 12),
-              RangeSelectotTextForm(
-                  labelText: 'Maximum', intValueSetter: (value) => _max),
-            ],
-          ),
-        ),
+      body: FormRange(
+        formKey: formKey,
+        maxValueSetter: (value) => min.value = value,
+        minValueSetter: (value) => max.value = value,
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        onPressed: () {
+          if (formKey.currentState?.validate() == true) {
+            formKey.currentState?.save();
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (context) =>
+                  RandomizerPage(min: min.value, max: max.value),
+            ));
+          }
+        },
         child: Icon(Icons.arrow_forward),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
@@ -57,7 +49,7 @@ class RangeSelectotTextForm extends StatelessWidget {
     required this.intValueSetter,
   }) : super(key: key);
   final String labelText;
-  final void Function(int value) intValueSetter;
+  final IntValueSetter intValueSetter;
 
   @override
   Widget build(BuildContext context) {
